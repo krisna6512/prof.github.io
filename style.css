@@ -15,4 +15,48 @@ body {
 
 .delete-btn:hover {
     background-color: #dc2626; /* Red-600 */
-}   
+}
+
+/* Gaya untuk tombol Sold dan Keep */
+.sold-btn {
+    background-color: #f59e0b; /* Amber-500 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.sold-btn:hover {
+    background-color: #d97706; /* Amber-600 */
+}
+
+.keep-btn {
+    background-color: #10b981; /* Emerald-500 */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.keep-btn:hover {
+    background-color: #059669; /* Emerald-600 */
+}
+
+/* Gaya untuk Modal Zoom Foto */
+#zoom-modal {
+    /* Tailwind classes already handle most of this:
+       fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden */
+    transition: opacity 0.3s ease-in-out; /* Smooth fade in/out */
+}
+
+#zoomed-image {
+    /* Tailwind classes already handle most of this:
+       max-w-full max-h-full object-contain cursor-zoom-in transition-transform duration-300 ease-in-out */
+    transform: scale(1); /* Default scale */
+}
+
+#zoomed-image.zoom-in {
+    transform: scale(1.2); /* Zoomed scale */
+}

@@ -15,6 +15,9 @@
     <div class="bg-gray-800 rounded-xl shadow-lg p-6 w-full max-w-4xl border border-gray-700">
         <h1 class="text-3xl font-bold text-center text-white mb-6">Manajer Akun MLBB Gmail</h1>
 
+        <!-- Area Pesan -->
+        <div id="message-area" class="text-center mb-4 p-3 rounded-md hidden"></div>
+
         <!-- Form untuk Menambahkan Akun Baru -->
         <div class="bg-gray-700 p-5 rounded-lg shadow-md mb-6 border border-gray-600">
             <h2 class="text-2xl font-semibold text-white mb-4">Tambah Akun Baru</h2>
@@ -24,22 +27,52 @@
                     <input type="email" id="gmail-account" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500" placeholder="contoh@gmail.com">
                 </div>
                 <div>
+                    <label for="moonton-password" class="block text-gray-300 text-sm font-medium mb-1">Password Moonton</label>
+                    <input type="password" id="moonton-password" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Password Moonton Anda">
+                </div>
+                <div>
                     <label for="mlbb-id" class="block text-gray-300 text-sm font-medium mb-1">ID MLBB (Opsional)</label>
                     <input type="text" id="mlbb-id" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: 123456789 (1234)">
                 </div>
                 <div>
-                    <label for="photo-url" class="block text-gray-300 text-sm font-medium mb-1">URL Foto Profil (Opsional)</label>
-                    <input type="url" id="photo-url" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500" placeholder="https://example.com/avatar.jpg">
+                    <label for="photo-upload" class="block text-gray-300 text-sm font-medium mb-1">Unggah Foto Profil (Opsional)</label>
+                    <input type="file" id="photo-upload" accept="image/*" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    <img id="photo-preview" src="https://placehold.co/100x100/374151/F9FAFB?text=No+Photo" alt="Pratinjau Foto" class="w-24 h-24 rounded-full object-cover mt-2 mx-auto border-2 border-blue-500">
                 </div>
                 <div>
                     <label for="account-tier" class="block text-gray-300 text-sm font-medium mb-1">Tingkatan Akun</label>
                     <select id="account-tier" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
-                        <option value="senior">Senior</option>
-                        <option value="ahli">Ahli</option>
-                        <option value="terhormat">Terhormat</option>
-                        <option value="juragan">Juragan</option>
+                        <option value="senior-v">Senior V</option>
+                        <option value="senior-iv">Senior IV</option>
+                        <option value="senior-iii">Senior III</option>
+                        <option value="senior-ii">Senior II</option>
+                        <option value="senior-i">Senior I</option>
+                        <option value="ahli-v">Ahli V</option>
+                        <option value="ahli-iv">Ahli IV</option>
+                        <option value="ahli-iii">Ahli III</option>
+                        <option value="ahli-ii">Ahli II</option>
+                        <option value="ahli-i">Ahli I</option>
+                        <option value="ternama-v">Ternama V</option>
+                        <option value="ternama-iv">Ternama IV</option>
+                        <option value="ternama-iii">Ternama III</option>
+                        <option value="ternama-ii">Ternama II</option>
+                        <option value="ternama-i">Ternama I</option>
+                        <option value="terhormat-v">Terhormat V</option>
+                        <option value="terhormat-iv">Terhormat IV</option>
+                        <option value="terhormat-iii">Terhormat III</option>
+                        <option value="terhormat-ii">Terhormat II</option>
+                        <option value="terhormat-i">Terhormat I</option>
+                        <option value="juragan-v">Juragan V</option>
+                        <option value="juragan-iv">Juragan IV</option>
+                        <option value="juragan-iii">Juragan III</option>
+                        <option value="juragan-ii">Juragan II</option>
+                        <option value="juragan-i">Juragan I</option>
                         <option value="sultan">Sultan</option>
                     </select>
+                </div>
+                <div>
+                    <label for="added-date" class="block text-gray-300 text-sm font-medium mb-1">Tanggal Ditambahkan</label>
+                    <input type="date" id="added-date" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-md text-white focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
             <button id="add-account-btn" class="mt-6 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors duration-200 font-semibold">Tambah Akun</button>
@@ -52,6 +85,12 @@
                 <!-- Akun akan dimuat di sini oleh JavaScript -->
             </div>
         </div>
+    </div>
+
+    <!-- Modal untuk Zoom Foto -->
+    <div id="zoom-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <span id="close-zoom-btn" class="absolute top-4 right-4 text-white text-3xl cursor-pointer">&times;</span>
+        <img id="zoomed-image" src="" alt="Zoomed Profile Photo" class="max-w-full max-h-full object-contain cursor-zoom-in transition-transform duration-300 ease-in-out">
     </div>
 
     <!-- Tautan ke file JavaScript Anda -->
