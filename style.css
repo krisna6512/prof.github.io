@@ -3,6 +3,32 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
+/* Gaya untuk kartu akun dengan transisi hover */
+.account-card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.account-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Animasi fade-in untuk kartu akun saat dimuat */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.account-card-enter {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
 /* Gaya untuk tombol hapus */
 .delete-btn {
     background-color: #ef4444; /* Red-500 */
@@ -46,17 +72,63 @@ body {
 
 /* Gaya untuk Modal Zoom Foto */
 #zoom-modal {
-    /* Tailwind classes already handle most of this:
-       fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden */
-    transition: opacity 0.3s ease-in-out; /* Smooth fade in/out */
+    transition: opacity 0.3s ease-in-out;
 }
 
 #zoomed-image {
-    /* Tailwind classes already handle most of this:
-       max-w-full max-h-full object-contain cursor-zoom-in transition-transform duration-300 ease-in-out */
-    transform: scale(1); /* Default scale */
+    transform: scale(1);
 }
 
 #zoomed-image.zoom-in {
-    transform: scale(1.2); /* Zoomed scale */
+    transform: scale(1.2);
+}
+
+/* === Gaya Notifikasi Toast Baru === */
+#toast-container {
+    position: fixed;
+    top: 1.5rem; /* 24px */
+    right: 1.5rem; /* 24px */
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* 12px */
+}
+
+.toast {
+    padding: 1rem 1.5rem; /* 16px 24px */
+    border-radius: 0.5rem; /* 8px */
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    animation: slide-in-out 4s ease-in-out forwards;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-left-width: 5px;
+}
+
+.toast-success {
+    background-color: #10b981; /* Emerald-500 */
+    border-color: #059669; /* Emerald-600 */
+}
+
+.toast-sold {
+    background-color: #f59e0b; /* Amber-500 */
+    border-color: #d97706; /* Amber-600 */
+}
+
+@keyframes slide-in-out {
+    0% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    15%, 85% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(120%);
+        opacity: 0;
+    }
 }
