@@ -1,134 +1,214 @@
-/* Custom CSS untuk tema gelap dan elemen spesifik */
+/* --- Variabel Warna & Font --- */
+:root {
+    --font-family: 'Poppins', sans-serif;
+    --font-title: 'Orbitron', sans-serif;
+
+    /* Dark Theme Colors */
+    --color-bg-start: #0F172A; /* slate-900 */
+    --color-bg-end: #0c1322;
+    --color-surface: #1E293B; /* slate-800 */
+    --color-card: #334155; /* slate-700 */
+    --color-border: #475569; /* slate-600 */
+    --color-text-primary: #F1F5F9; /* slate-100 */
+    --color-text-secondary: #94A3B8; /* slate-400 */
+    
+    /* Universal Colors */
+    --color-accent: #38BDF8; /* sky-400 */
+    --color-accent-dark: #0EA5E9; /* sky-500 */
+    --color-accent-glow: rgba(56, 189, 248, 0.5);
+    --color-success: #22C55E; /* green-500 */
+    --color-warning: #F59E0B; /* amber-500 */
+    --color-danger: #EF4444; /* red-500 */
+    --color-profit: #A3E635; /* lime-400 */
+    --color-loss: var(--color-danger);
+    --color-info: #60A5FA; /* blue-400 */
+    --color-notif-gaga: #8B5CF6; /* violet-500 */
+    --color-notif-gaga-border: #7C3AED; /* violet-600 */
+}
+
+/* --- Reset & Body Styling --- */
 body {
-    font-family: 'Inter', sans-serif;
-}
-
-/* Gaya untuk kartu akun dengan transisi hover */
-.account-card {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.account-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
-}
-
-/* Animasi fade-in untuk kartu akun saat dimuat */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.account-card-enter {
-    animation: fadeIn 0.5s ease-out forwards;
-}
-
-/* Gaya untuk tombol hapus */
-.delete-btn {
-    background-color: #ef4444; /* Red-500 */
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem; /* rounded-md */
-    font-weight: 600; /* font-semibold */
-    transition: background-color 0.2s ease-in-out;
-}
-
-.delete-btn:hover {
-    background-color: #dc2626; /* Red-600 */
-}
-
-/* Gaya untuk tombol Sold dan Keep */
-.sold-btn {
-    background-color: #f59e0b; /* Amber-500 */
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.sold-btn:hover {
-    background-color: #d97706; /* Amber-600 */
-}
-
-.keep-btn {
-    background-color: #10b981; /* Emerald-500 */
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    transition: background-color 0.2s ease-in-out;
-}
-
-.keep-btn:hover {
-    background-color: #059669; /* Emerald-600 */
-}
-
-/* Gaya untuk Modal Zoom Foto */
-#zoom-modal {
-    transition: opacity 0.3s ease-in-out;
-}
-
-#zoomed-image {
-    transform: scale(1);
-}
-
-#zoomed-image.zoom-in {
-    transform: scale(1.2);
-}
-
-/* === Gaya Notifikasi Toast Baru === */
-#toast-container {
-    position: fixed;
-    top: 1.5rem; /* 24px */
-    right: 1.5rem; /* 24px */
-    z-index: 1000;
+    font-family: var(--font-family);
+    background: linear-gradient(135deg, var(--color-bg-start), var(--color-bg-end));
+    background-attachment: fixed;
+    color: var(--color-text-primary);
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
-    gap: 0.75rem; /* 12px */
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1rem;
+    overflow-x: hidden;
+    transition: background-color 0.3s, color 0.3s;
 }
 
-.toast {
-    padding: 1rem 1.5rem; /* 16px 24px */
-    border-radius: 0.5rem; /* 8px */
-    color: white;
-    font-weight: 600;
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    animation: slide-in-out 4s ease-in-out forwards;
-    opacity: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    border-left-width: 5px;
-}
+.antialiased { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-.toast-success {
-    background-color: #10b981; /* Emerald-500 */
-    border-color: #059669; /* Emerald-600 */
-}
+/* --- Layout Utama & Header --- */
+.main-container { width: 100%; max-width: 64rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.app-header { text-align: center; padding: 1rem 0; animation: fadeInDown 0.8s ease-out; position: relative; }
+.app-title { font-family: var(--font-title); font-size: 2.25rem; font-weight: 600; letter-spacing: 0.05em; color: var(--color-text-primary); padding-bottom: 0.25rem; border-bottom: 2px solid var(--color-accent); display: inline-block; }
+.app-subtitle { font-size: 1.125rem; font-weight: 400; color: var(--color-text-secondary); min-height: 1.5em; margin-top: 0.5rem; }
+.app-subtitle::after { content: '|'; animation: blink 0.7s infinite; color: var(--color-accent); }
+@keyframes blink { 50% { opacity: 0; } }
 
-.toast-sold {
-    background-color: #f59e0b; /* Amber-500 */
-    border-color: #d97706; /* Amber-600 */
-}
+/* --- Navigasi Tab --- */
+.tab-nav { display: flex; justify-content: center; background-color: var(--color-surface); border-radius: 9999px; padding: 0.5rem; border: 1px solid var(--color-border); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+.tab-btn { display: inline-flex; align-items: center; gap: 0.75rem; background-color: transparent; border: none; color: var(--color-text-secondary); padding: 0.75rem 1.5rem; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+.tab-btn.active, .tab-btn:hover { background-color: var(--color-accent); color: var(--color-bg-start); box-shadow: 0 4px 10px var(--color-accent-glow); transform: translateY(-2px); }
 
-@keyframes slide-in-out {
-    0% {
-        transform: translateX(120%);
-        opacity: 0;
-    }
-    15%, 85% {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    100% {
-        transform: translateX(120%);
-        opacity: 0;
-    }
-}
+/* --- Tampilan Kontainer --- */
+.view-container { display: none; flex-direction: column; gap: 1.5rem; animation: fadeInUp 0.5s ease-out; }
+.view-container.active { display: flex; }
+
+/* --- Form --- */
+.control-btn.add-btn { display: inline-flex; align-items: center; gap: 0.5rem; border: none; padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s ease; cursor: pointer; background-color: var(--color-accent); color: var(--color-bg-start); }
+.control-btn.add-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.add-account-form-container { background-color: var(--color-surface); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--color-border); transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); max-height: 0; overflow: hidden; opacity: 0; padding-top: 0; padding-bottom: 0; }
+.add-account-form-container:not(.hidden) { max-height: 1000px; opacity: 1; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.input-group { margin-bottom: 0.5rem; }
+.input-label { color: var(--color-text-secondary); margin-bottom: 0.5rem; display: block; font-size: 0.875rem; font-weight: 500;}
+.input-field { background-color: var(--color-bg-start); border: 1px solid var(--color-border); border-radius: 0.5rem; padding: 0.75rem 1rem; color: var(--color-text-primary); width: 100%; transition: border-color 0.2s, box-shadow 0.2s; }
+.input-field:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-glow); }
+.photo-preview { width: 5rem; height: 5rem; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-border); background-color: var(--color-card); }
+.file-input-label { background-color: var(--color-card); color: var(--color-text-primary); padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; border: 1px solid var(--color-border); transition: all 0.2s ease; cursor: pointer; display: inline-block; }
+.file-input-label:hover { background-color: var(--color-border); }
+.file-input { display: none; }
+.form-actions { margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+.submit-btn { flex-grow: 1; background: linear-gradient(to right, var(--color-accent), var(--color-accent-dark)); color: white; padding: 0.75rem; border-radius: 0.5rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.2s ease; border: none; cursor: pointer; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px var(--color-accent-glow); }
+.submit-btn:disabled { background: var(--color-border); cursor: not-allowed; transform: none; box-shadow: none; }
+.cancel-btn { background-color: var(--color-card); color: var(--color-text-primary); padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; border: 1px solid var(--color-border); transition: all 0.2s ease; cursor: pointer; }
+.cancel-btn:hover { background-color: var(--color-border); }
+.spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- Daftar Akun (Stok) --- */
+.account-list-container { background-color: var(--color-surface); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--color-border); }
+.account-list-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+.search-wrapper { position: relative; flex-grow: 1; max-width: 400px; }
+.search-icon { position: absolute; top: 50%; left: 0.75rem; transform: translateY(-50%); color: var(--color-text-secondary); }
+.search-input { width: 100%; background-color: var(--color-bg-start); border: 1px solid var(--color-border); border-radius: 9999px; padding: 0.6rem 1rem 0.6rem 2.5rem; color: var(--color-text-primary); transition: all 0.2s; }
+.search-input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px var(--color-accent-glow); }
+.total-accounts-badge { background-color: var(--color-accent); color: var(--color-bg-start); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; }
+
+/* --- Grouping & Kartu Akun --- */
+.accounts-group-container { display: flex; flex-direction: column; gap: 1.5rem; }
+.account-group-summary { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; background-color: var(--color-card); border-radius: 0.75rem; border: 1px solid var(--color-border); }
+.account-group-title { font-size: 1.125rem; font-weight: 600; text-transform: capitalize; color: var(--color-text-primary); }
+.account-group-count { background-color: var(--color-accent); color: var(--color-bg-start); padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; }
+.account-group-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; padding: 1.5rem 0.5rem 0.5rem; }
+
+.account-card { background-color: var(--color-card); border-radius: 1rem; padding: 1.25rem; border: 1px solid var(--color-border); border-left-width: 4px; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease; opacity: 0; transform: translateY(20px); animation: fadeInUp 0.5s ease-out forwards; }
+.account-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.15); }
+.tier-sultan { border-left-color: #F59E0B; } .tier-juragan { border-left-color: #EF4444; } .tier-terhormat { border-left-color: #8B5CF6; } .tier-ternama { border-left-color: #3B82F6; } .tier-ahli { border-left-color: #10B981; } .tier-senior { border-left-color: #6B7280; }
+.card-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.profile-img { width: 4.5rem; height: 4.5rem; border-radius: 9999px; object-fit: cover; border: 3px solid var(--color-accent); cursor: pointer; flex-shrink: 0; transition: transform 0.3s ease; background-color: var(--color-surface); }
+.profile-img:hover { transform: scale(1.1); }
+.card-gmail { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-text-primary); }
+.card-tier { font-size: 0.875rem; font-weight: 500; color: var(--color-accent); text-transform: capitalize; }
+.card-pricing { display: flex; justify-content: space-around; background-color: var(--color-bg-start); border-radius: 0.5rem; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--color-border); }
+.price-item { text-align: center; }
+.price-label { font-size: 0.75rem; color: var(--color-text-secondary); text-transform: uppercase; display: block; }
+.price-value { font-size: 1.125rem; font-weight: 700; display: block; }
+.buy-price { color: var(--color-danger); } .sell-price { color: var(--color-success); }
+.card-details { display: grid; grid-template-columns: 90px 1fr; gap: 0.5rem; font-size: 0.875rem; margin-bottom: 1.25rem; }
+.detail-label { color: var(--color-text-secondary); font-weight: 500; }
+.detail-value { color: var(--color-text-primary); word-break: break-all; }
+.password-wrapper { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.password-toggle-btn { background: none; border: none; color: var(--color-text-secondary); cursor: pointer; padding: 0.25rem; }
+.password-toggle-btn:hover { color: var(--color-text-primary); }
+.card-actions { margin-top: auto; display: flex; gap: 0.5rem; justify-content: flex-end; }
+.action-btn { color: white; padding: 0.4rem 0.8rem; border-radius: 0.375rem; font-weight: 600; font-size: 0.8rem; transition: all 0.2s ease; border: none; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; }
+.action-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+.edit-btn { background-color: var(--color-info); }
+.delete-btn { background-color: var(--color-danger); } 
+.sold-btn { background-color: var(--color-warning); } 
+.hb-btn { background-color: var(--color-info); }
+.keep-btn { background-color: var(--color-success); }
+
+/* --- Skeleton Loader --- */
+.skeleton-card { background-color: var(--color-card); border-radius: 1rem; padding: 1.25rem; border: 1px solid var(--color-border); }
+.skeleton { background-color: var(--color-border); border-radius: 0.25rem; animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+@keyframes pulse { 50% { opacity: .5; } }
+.skeleton.circle { width: 4.5rem; height: 4.5rem; border-radius: 50%; }
+.skeleton.text { height: 1rem; margin-bottom: 0.5rem; }
+.skeleton.text-sm { height: 0.75rem; }
+
+/* --- Empty State --- */
+.empty-state { text-align: center; padding: 3rem 1rem; background-color: var(--color-card); border-radius: 1rem; border: 2px dashed var(--color-border); }
+.empty-state-icon { color: var(--color-accent); margin: 0 auto 1rem; }
+.empty-state-title { font-size: 1.25rem; font-weight: 600; color: var(--color-text-primary); margin-bottom: 0.5rem; }
+.empty-state-text { color: var(--color-text-secondary); max-width: 400px; margin: 0 auto 1.5rem; }
+
+/* --- Riwayat & Statistik --- */
+.history-container { background-color: var(--color-surface); padding: 1.5rem; border-radius: 1rem; border: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 1.5rem; }
+.history-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; color: var(--color-text-primary); }
+.clear-history-btn { background-color: var(--color-danger); color: white; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; border: none; cursor: pointer; }
+.clear-history-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.history-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.stat-card { background-color: var(--color-card); padding: 1rem; border-radius: 0.75rem; text-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease; animation: popIn 0.5s ease-out forwards; opacity: 0; }
+.stat-card:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 8px 20px rgba(0,0,0,0.25); }
+.stat-label { font-size: 0.875rem; color: var(--color-text-secondary); margin-bottom: 0.25rem; }
+.stat-value { font-size: 1.5rem; font-weight: 700; color: var(--color-text-primary); }
+.stat-value.profit { color: var(--color-profit); }
+.stat-value.revenue { color: var(--color-success); }
+.stat-value.cost { color: var(--color-danger); }
+.stat-value.info { color: var(--color-info); }
+.chart-container { background-color: var(--color-card); padding: 1rem; border-radius: 0.75rem; height: 300px; }
+.history-list { display: flex; flex-direction: column; gap: 1rem; }
+.history-item { display: flex; align-items: center; justify-content: space-between; background-color: var(--color-card); padding: 1rem; border-radius: 0.75rem; border-left: 4px solid var(--color-accent); transition: opacity 0.3s ease, transform 0.3s ease; }
+.history-item:hover { transform: translateX(5px); }
+.history-item.loss { border-left-color: var(--color-loss); }
+.history-info { display: flex; align-items: center; gap: 1rem; flex-grow: 1; min-width: 0; }
+.history-info img { width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; }
+.history-details { margin: 0; min-width: 0; }
+.history-gmail { font-weight: 600; color: var(--color-text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-date { font-size: 0.875rem; color: var(--color-text-secondary); }
+.history-pricing { text-align: right; margin-left: 1rem; flex-shrink: 0; }
+.history-result { font-weight: 700; }
+.history-result.profit { color: var(--color-profit); }
+.history-result.loss { color: var(--color-loss); }
+.history-price-breakdown { font-size: 0.8rem; color: var(--color-text-secondary); }
+.delete-history-btn { background: none; border: none; color: var(--color-text-secondary); cursor: pointer; padding: 0.25rem; margin-left: 0.5rem; transition: color 0.2s ease; }
+.delete-history-btn:hover { color: var(--color-danger); }
+
+/* --- Load More Button --- */
+.load-more-container { text-align: center; padding-top: 1rem; }
+.load-more-btn { background-color: var(--color-accent); color: var(--color-bg-start); padding: 0.6rem 2rem; border-radius: 9999px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s ease; }
+.load-more-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+
+/* --- Lainnya & Animasi --- */
+.hidden { display: none !important; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.app-footer { text-align: center; padding: 2rem 0 1rem; color: var(--color-text-secondary); font-size: 0.875rem; }
+.heart-icon { color: var(--color-danger); animation: heartbeat 1.5s ease-in-out infinite; display: inline-block; }
+@keyframes heartbeat { 0%, 100% { transform: scale(1); } 10%, 30% { transform: scale(0.9); } 20%, 40%, 60%, 80% { transform: scale(1.1); } 50%, 70% { transform: scale(1); } }
+.zoom-modal { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.zoom-modal:not(.hidden) { opacity: 1; pointer-events: auto; }
+.close-zoom-btn { position: absolute; top: 1rem; right: 1.5rem; color: white; font-size: 2.5rem; cursor: pointer; transition: transform 0.2s; }
+.close-zoom-btn:hover { transform: scale(1.2); }
+.zoomed-image { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); transform: scale(0.9); transition: transform 0.3s ease; }
+.zoom-modal:not(.hidden) .zoomed-image { transform: scale(1); }
+.confirm-modal-overlay { position: fixed; inset: 0; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.confirm-modal-overlay:not(.hidden) { opacity: 1; pointer-events: auto; }
+.confirm-modal-box { background-color: var(--color-surface); padding: 2rem; border-radius: 1rem; border: 1px solid var(--color-border); text-align: center; max-width: 400px; width: 90%; transform: scale(0.95); transition: transform 0.3s ease; }
+.confirm-modal-overlay:not(.hidden) .confirm-modal-box { transform: scale(1); }
+.confirm-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text-primary); }
+.confirm-message { color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+.confirm-buttons { display: flex; justify-content: center; gap: 1rem; }
+.confirm-btn-yes, .confirm-btn-no { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+.confirm-btn-yes { background-color: var(--color-danger); color: white; }
+.confirm-btn-yes:hover { filter: brightness(1.1); }
+.confirm-btn-no { background-color: var(--color-card); color: var(--color-text-primary); }
+.confirm-btn-no:hover { background-color: var(--color-border); }
+#toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 1000; display: flex; flex-direction: column; gap: 0.75rem; }
+.toast { padding: 1rem 1.5rem; border-radius: 0.5rem; color: white; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); animation: slide-in-out 4s ease-in-out forwards; display: flex; align-items: center; gap: 0.75rem; border-left-width: 5px; }
+.toast-success { background-color: var(--color-success); border-color: #16A34A; }
+.toast-sold { background-color: var(--color-notif-gaga); border-color: var(--color-notif-gaga-border); }
+.toast-fail { background-color: var(--color-danger); border-color: #B91C1C; }
+.toast-deleted { background-color: var(--color-danger); border-color: #B91C1C; }
+.toast-info { background-color: var(--color-info); border-color: #2563EB; }
+.toast-warning { background-color: var(--color-warning); border-color: #D97706; }
+@keyframes slide-in-out { 0% { transform: translateX(120%); opacity: 0; } 15%, 85% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(120%); opacity: 0; } }
