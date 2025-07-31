@@ -314,11 +314,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const isLoss = item.status === 'loss' || result < 0;
         const resultClass = isLoss ? 'text-red-400' : 'text-lime-400';
         const resultLabel = isLoss ? 'Rugi' : 'Untung';
+        const photoSrc = item.photoBase64 || DEFAULT_PHOTO;
         
         const itemEl = document.createElement('div');
         itemEl.className = `bg-slate-800 p-3 rounded-lg flex items-center gap-4 border-l-4 ${isLoss ? 'border-red-500' : 'border-sky-500'}`;
         itemEl.innerHTML = `
-            <img src="${item.photoBase64 || DEFAULT_PHOTO}" alt="Foto Profil" class="w-10 h-10 rounded-full object-cover flex-shrink-0" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';">
+            <img src="${photoSrc}" alt="Foto Profil" class="w-10 h-10 rounded-full object-cover flex-shrink-0 cursor-pointer" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';">
             <div class="flex-grow min-w-0">
                 <p class="font-medium text-white truncate">${item.gmail}</p>
                 <p class="text-xs text-slate-400">${isLoss ? 'Dihapus' : 'Terjual'} pada: ${formatDate(item.soldDate)}</p>
@@ -330,6 +331,13 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="delete-history-btn text-slate-500 hover:text-red-500 transition-colors w-8 h-8 rounded-full hover:bg-red-500/10" title="Hapus item ini">
                 <i class="fa-solid fa-times"></i>
             </button>`;
+
+        // Menambahkan event listener untuk zoom gambar
+        itemEl.querySelector('img').addEventListener('click', () => {
+            elements.zoomedImage.src = photoSrc;
+            elements.zoomModal.classList.remove('hidden');
+        });
+
         itemEl.querySelector('.delete-history-btn').addEventListener('click', e => { 
             e.stopPropagation(); 
             showConfirmModal('Hapus Riwayat?', `Anda yakin ingin menghapus riwayat untuk akun "${item.gmail}"?`, () => deleteHistoryItem(item.id)); 
@@ -463,6 +471,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Fungsi baru untuk memeriksa apakah form memiliki data yang belum disimpan
+    function isFormDirty() {
+        return elements.gmailAccountInput.value.trim() !== '' ||
+            elements.moontonPasswordInput.value.trim() !== '' ||
+            elements.mlbbIdInput.value.trim() !== '' ||
+            elements.hargaBeliInput.value !== '' ||
+            elements.hargaJualInput.value !== '' ||
+            elements.photoBase64Input.value !== '';
+    }
+
     function resetForm() {
         elements.addAccountForm.reset();
         elements.editingAccountIdInput.value = '';
@@ -478,6 +496,19 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.submitBtnText.textContent = 'Simpan Akun';
         elements.cancelEditBtn.classList.add('hidden');
         elements.addAccountForm.classList.add('hidden');
+    }
+
+    // Fungsi baru untuk menangani permintaan penutupan form
+    function handleCloseFormRequest() {
+        if (isFormDirty()) {
+            showConfirmModal(
+                'Batalkan Perubahan?',
+                'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup form dan membuang perubahan?',
+                resetAndHideForm // Panggil resetAndHideForm hanya jika pengguna mengonfirmasi
+            );
+        } else {
+            resetAndHideForm(); // Jika form kosong, langsung tutup
+        }
     }
 
     function refreshAccountView() {
@@ -501,18 +532,23 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         elements.addAccountForm.addEventListener('submit', handleFormSubmit);
         elements.searchInput.addEventListener('input', e => { state.searchTerm = e.target.value.toLowerCase(); refreshAccountView(); });
+        
+        // Event listener diubah untuk menggunakan handleCloseFormRequest
         elements.toggleFormBtn.addEventListener('click', () => {
-            if (elements.editingAccountIdInput.value) {
-                resetAndHideForm();
+            const isHidden = elements.addAccountForm.classList.contains('hidden');
+            if (isHidden) {
+                // Jika form tersembunyi, tampilkan
+                elements.addAccountForm.classList.remove('hidden');
+                elements.addAccountForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                const isHidden = elements.addAccountForm.classList.contains('hidden');
-                elements.addAccountForm.classList.toggle('hidden');
-                if (isHidden) {
-                    elements.addAccountForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                // Jika form terlihat, minta konfirmasi sebelum menutup
+                handleCloseFormRequest();
             }
         });
-        elements.cancelEditBtn.addEventListener('click', resetAndHideForm);
+
+        // Event listener diubah untuk menggunakan handleCloseFormRequest
+        elements.cancelEditBtn.addEventListener('click', handleCloseFormRequest);
+        
         elements.navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
         elements.monthFilterInput.addEventListener('change', () => renderHistoryAndStats());
         elements.clearHistoryBtn.addEventListener('click', clearAllHistory);
