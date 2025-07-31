@@ -70,12 +70,77 @@ document.addEventListener('DOMContentLoaded', () => {
     const DEFAULT_PHOTO = 'https://placehold.co/100x100/1e293b/94a3b8?text=No+Img';
 
     // --- Fungsi Penyimpanan (Storage) ---
-    const saveData = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error("Gagal menyimpan data:", e); showToast('Gagal menyimpan data.', 'fail'); } };
-    const loadData = (key, def = []) => { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; } catch (e) { console.error("Gagal memuat data:", e); showToast('Gagal memuat data.', 'fail'); return def; } };
+    const saveData = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error("Gagal menyimpan data:", e); showToast('Gagal menyimpan data. Mungkin penyimpanan penuh.', 'fail'); } };
+    
+    const loadData = (key, def = []) => {
+        const d = localStorage.getItem(key);
+        if (!d) return def;
+        try {
+            return JSON.parse(d);
+        } catch (e) {
+            console.error("Gagal mem-parsing data JSON untuk kunci:", key, e);
+            setTimeout(() => {
+                showConfirmModal(
+                    'Data Rusak Terdeteksi',
+                    `Data untuk "${key}" tampaknya rusak dan tidak bisa dimuat. Apakah Anda ingin menghapus data yang rusak dan memulai dari awal? Tindakan ini tidak dapat diurungkan.`,
+                    () => {
+                        localStorage.removeItem(key);
+                        showToast(`Data "${key}" yang rusak telah dihapus. Aplikasi akan dimuat ulang.`, 'info');
+                        setTimeout(() => window.location.reload(), 2000);
+                    }
+                );
+            }, 100);
+            return def;
+        }
+    };
 
     // --- Fungsi Bantuan (Helpers) ---
     const formatCurrency = (amount) => `Rp${Number(amount || 0).toLocaleString('id-ID')}`;
     const formatDate = (dateString) => { if (!dateString) return 'N/A'; const d = new Date(dateString); return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); };
+    
+    /**
+     * [FIX] Fungsi baru untuk mengubah ukuran gambar.
+     * Mengubah ukuran file gambar ke dimensi maksimal yang ditentukan untuk mengurangi ukuran file.
+     * @param {File} file - File gambar yang akan diubah ukurannya.
+     * @param {number} maxWidth - Lebar maksimal gambar.
+     * @param {number} maxHeight - Tinggi maksimal gambar.
+     * @returns {Promise<Blob>} Promise yang resolve dengan blob gambar yang telah diubah ukurannya.
+     */
+    const resizeImage = (file, maxWidth, maxHeight) => new Promise((resolve, reject) => {
+        const img = document.createElement('img');
+        const reader = new FileReader();
+        reader.onload = (e) => { img.src = e.target.result; };
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let { width, height } = img;
+            if (width > height) {
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width *= maxHeight / height;
+                    height = maxHeight;
+                }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(new Error('Konversi Canvas ke Blob gagal'));
+                }
+            }, file.type, 0.9); // Kompresi kualitas 90%
+        };
+        img.onerror = error => reject(error);
+    });
+
     const imageToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); });
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -332,7 +397,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <i class="fa-solid fa-times"></i>
             </button>`;
 
-        // Menambahkan event listener untuk zoom gambar
         itemEl.querySelector('img').addEventListener('click', () => {
             elements.zoomedImage.src = photoSrc;
             elements.zoomModal.classList.remove('hidden');
@@ -471,7 +535,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fungsi baru untuk memeriksa apakah form memiliki data yang belum disimpan
     function isFormDirty() {
         return elements.gmailAccountInput.value.trim() !== '' ||
             elements.moontonPasswordInput.value.trim() !== '' ||
@@ -498,16 +561,15 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.addAccountForm.classList.add('hidden');
     }
 
-    // Fungsi baru untuk menangani permintaan penutupan form
     function handleCloseFormRequest() {
         if (isFormDirty()) {
             showConfirmModal(
                 'Batalkan Perubahan?',
                 'Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin menutup form dan membuang perubahan?',
-                resetAndHideForm // Panggil resetAndHideForm hanya jika pengguna mengonfirmasi
+                resetAndHideForm
             );
         } else {
-            resetAndHideForm(); // Jika form kosong, langsung tutup
+            resetAndHideForm();
         }
     }
 
@@ -518,8 +580,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inisialisasi ---
     function init() {
-        state.accounts = loadData('accountsDb').sort((a,b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier));
+        state.accounts = loadData('accountsDb');
         state.history = loadData('historyDb');
+        
+        state.accounts.sort((a,b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier));
+
         renderSkeletons(5);
         setTimeout(() => { refreshAccountView(); }, 300);
         typeWriter(elements.appSubtitle, "Kelola stok akun MLBB dengan mudah.");
@@ -533,27 +598,47 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.addAccountForm.addEventListener('submit', handleFormSubmit);
         elements.searchInput.addEventListener('input', e => { state.searchTerm = e.target.value.toLowerCase(); refreshAccountView(); });
         
-        // Event listener diubah untuk menggunakan handleCloseFormRequest
         elements.toggleFormBtn.addEventListener('click', () => {
             const isHidden = elements.addAccountForm.classList.contains('hidden');
             if (isHidden) {
-                // Jika form tersembunyi, tampilkan
                 elements.addAccountForm.classList.remove('hidden');
                 elements.addAccountForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
-                // Jika form terlihat, minta konfirmasi sebelum menutup
                 handleCloseFormRequest();
             }
         });
 
-        // Event listener diubah untuk menggunakan handleCloseFormRequest
         elements.cancelEditBtn.addEventListener('click', handleCloseFormRequest);
         
         elements.navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
         elements.monthFilterInput.addEventListener('change', () => renderHistoryAndStats());
         elements.clearHistoryBtn.addEventListener('click', clearAllHistory);
         elements.loadMoreBtn.addEventListener('click', () => { state.visibleAccountsCount += state.accountsPerPage; renderAccounts(); });
-        elements.accountPhotoInput.addEventListener('change', async (e) => { const f = e.target.files[0]; if (f) try { const b64 = await imageToBase64(f); elements.photoPreviewImg.src = b64; elements.photoBase64Input.value = b64; } catch (err) { showToast("Gagal memproses gambar.", "fail"); } });
+        
+        /**
+         * [FIX] Event listener diperbarui untuk mengubah ukuran gambar sebelum konversi.
+         * Ini mencegah error karena data Base64 yang terlalu besar untuk localStorage.
+         */
+        elements.accountPhotoInput.addEventListener('change', async (e) => {
+            const f = e.target.files[0];
+            if (f) {
+                if (!f.type.startsWith('image/')) {
+                    showToast('File yang dipilih bukan gambar.', 'warning');
+                    return;
+                }
+                try {
+                    // Resize gambar ke maks 400x400 piksel untuk menghemat ruang
+                    const resizedBlob = await resizeImage(f, 400, 400);
+                    const b64 = await imageToBase64(resizedBlob);
+                    elements.photoPreviewImg.src = b64;
+                    elements.photoBase64Input.value = b64;
+                } catch (err) {
+                    console.error("Gagal memproses gambar:", err);
+                    showToast("Gagal memproses gambar. Coba gambar lain.", "fail");
+                }
+            }
+        });
+
         elements.closeZoomBtn.addEventListener('click', () => elements.zoomModal.classList.add('hidden'));
         elements.zoomModal.addEventListener('click', (e) => { if (e.target === elements.zoomModal) elements.zoomModal.classList.add('hidden'); });
         elements.confirmNoBtn.addEventListener('click', hideConfirmModal);
@@ -561,11 +646,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateDropdowns() {
-        // Populate Regions
         elements.accountRegionSelect.innerHTML = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
         elements.accountRegionSelect.value = "Indonesia";
 
-        // Populate Tiers
         elements.accountTierSelect.innerHTML = '';
         for (const groupName in TIERS) {
             const optgroup = document.createElement('optgroup');
