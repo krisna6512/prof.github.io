@@ -3,123 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Manager Pro v3 (Dark Mode)</title>
-    
-    <!-- Tailwind CSS CDN -->
+    <title>Account Manager v4</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Poppins & Orbitron -->
+
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <!-- Chart.js CDN -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- File CSS Kustom -->
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="antialiased">
-    
-    <!-- Wadah Notifikasi Toast -->
-    <div id="toast-container"></div>
+<body class="bg-slate-900 text-slate-200 antialiased">
 
-    <!-- Kontainer Utama -->
-    <div class="main-container">
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 w-full max-w-xs sm:max-w-sm"></div>
+
+    <!-- Main Container -->
+    <div class="main-container pb-24 md:pb-8">
         
-        <!-- Header Aplikasi -->
-        <header class="app-header">
-            <h1 class="app-title">Account Manager</h1>
-            <p id="app-subtitle" class="app-subtitle"></p>
+        <!-- App Header -->
+        <header class="app-header my-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Account Manager</h1>
+            <p id="app-subtitle" class="text-slate-400 mt-2"></p>
         </header>
 
-        <!-- Navigasi Tab -->
-        <nav class="tab-nav">
-            <button id="stock-tab" class="tab-btn active" data-view="stock-view">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1z"/></svg>
-                <span>Stok Akun</span>
-            </button>
-            <button id="history-tab" class="tab-btn" data-view="history-view">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
-                <span>Riwayat & Statistik</span>
-            </button>
-        </nav>
-
-        <!-- Tampilan Stok -->
+        <!-- Stock View -->
         <div id="stock-view" class="view-container active">
-            <div class="form-toggle-container">
-                <button id="toggle-form-btn" class="control-btn add-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <span>Tambah Akun Baru</span>
+            <!-- Form Toggle & Search -->
+            <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                <div class="relative flex-grow">
+                    <i class="fa-solid fa-search absolute top-1/2 left-4 -translate-y-1/2 text-slate-500"></i>
+                    <input type="text" id="search-input" placeholder="Cari email atau pangkat..." class="search-input w-full">
+                </div>
+                <button id="toggle-form-btn" class="control-btn add-btn w-full sm:w-auto">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Tambah Akun</span>
                 </button>
             </div>
-
-            <form id="add-account-form" class="add-account-form-container hidden">
+            
+            <!-- Add/Edit Account Form -->
+            <form id="add-account-form" class="add-account-form-container hidden mb-6">
                 <input type="hidden" id="editing-account-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="input-group"><label for="gmail-account" class="input-label">Akun Gmail</label><input type="email" id="gmail-account" class="input-field" placeholder="contoh@gmail.com" required></div>
-                    <div class="input-group"><label for="moonton-password" class="input-label">Password Moonton</label><input type="password" id="moonton-password" class="input-field" placeholder="••••••••"></div>
-                    <div class="input-group"><label for="mlbb-id" class="input-label">ID MLBB (Opsional)</label><input type="text" id="mlbb-id" class="input-field" placeholder="123456789 (1234)"></div>
-                    <div class="input-group"><label for="account-region" class="input-label">Region</label><select id="account-region" class="input-field"></select></div>
-                    <div class="input-group"><label for="account-tier" class="input-label">Tingkatan Akun</label><select id="account-tier" class="input-field"><option value="senior-v">Senior V</option><option value="senior-iv">Senior IV</option><option value="senior-iii">Senior III</option><option value="senior-ii">Senior II</option><option value="senior-i">Senior I</option><option value="ahli-v">Ahli V</option><option value="ahli-iv">Ahli IV</option><option value="ahli-iii">Ahli III</option><option value="ahli-ii">Ahli II</option><option value="ahli-i">Ahli I</option><option value="ternama-v">Ternama V</option><option value="ternama-iv">Ternama IV</option><option value="ternama-iii">Ternama III</option><option value="ternama-ii">Ternama II</option><option value="ternama-i">Ternama I</option><option value="terhormat-v">Terhormat V</option><option value="terhormat-iv">Terhormat IV</option><option value="terhormat-iii">Terhormat III</option><option value="terhormat-ii">Terhormat II</option><option value="terhormat-i">Terhormat I</option><option value="juragan-v">Juragan V</option><option value="juragan-iv">Juragan IV</option><option value="juragan-iii">Juragan III</option><option value="juragan-ii">Juragan II</option><option value="juragan-i">Juragan I</option><option value="sultan">Sultan</option></select></div>
-                    <div class="input-group"><label for="added-date" class="input-label">Tanggal Ditambahkan</label><input type="date" id="added-date" class="input-field"></div>
-                    <div class="input-group"><label for="harga-beli" class="input-label">Harga Beli</label><input type="number" id="harga-beli" class="input-field" placeholder="Contoh: 50000"></div>
-                    <div class="input-group"><label for="harga-jual" class="input-label">Harga Jual</label><input type="number" id="harga-jual" class="input-field" placeholder="Contoh: 75000"></div>
-                    <div class="lg:col-span-3 md:col-span-2 input-group">
-                        <label for="account-photo" class="input-label">Foto Profil Akun</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="input-group sm:col-span-2">
+                        <label for="gmail-account" class="input-label">Akun Gmail</label>
+                        <input type="email" id="gmail-account" class="input-field" placeholder="contoh@gmail.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="moonton-password" class="input-label">Password Moonton</label>
+                        <input type="password" id="moonton-password" class="input-field" placeholder="••••••••">
+                    </div>
+                    <div class="input-group">
+                        <label for="mlbb-id" class="input-label">ID MLBB (Opsional)</label>
+                        <input type="text" id="mlbb-id" class="input-field" placeholder="123456789 (1234)">
+                    </div>
+                    <div class="input-group">
+                        <label for="account-region" class="input-label">Region</label>
+                        <select id="account-region" class="input-field"></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="account-tier" class="input-label">Tingkatan Akun</label>
+                        <select id="account-tier" class="input-field"></select>
+                    </div>
+                    <div class="input-group">
+                        <label for="harga-beli" class="input-label">Harga Beli</label>
+                        <input type="number" id="harga-beli" class="input-field" placeholder="Contoh: 50000">
+                    </div>
+                    <div class="input-group">
+                        <label for="harga-jual" class="input-label">Harga Jual</label>
+                        <input type="number" id="harga-jual" class="input-field" placeholder="Contoh: 75000">
+                    </div>
+                     <div class="input-group sm:col-span-2">
+                        <label for="added-date" class="input-label">Tanggal Ditambahkan</label>
+                        <input type="date" id="added-date" class="input-field">
+                    </div>
+                    <div class="sm:col-span-2 input-group">
+                        <label class="input-label">Foto Profil Akun</label>
                         <div class="flex items-center gap-4">
-                            <img id="photo-preview" src="https://placehold.co/100x100/334155/E5E7EB?text=Preview" alt="Pratinjau Foto" class="photo-preview">
-                            <label class="file-input-label"><span>Pilih Gambar</span><input type="file" id="account-photo" class="file-input" accept="image/*"></label>
+                            <img id="photo-preview" src="https://placehold.co/100x100/1e293b/94a3b8?text=Preview" alt="Pratinjau Foto" class="photo-preview">
+                            <label class="file-input-label">
+                                <i class="fa-solid fa-upload mr-2"></i>
+                                <span>Pilih Gambar</span>
+                                <input type="file" id="account-photo" class="file-input" accept="image/*">
+                            </label>
                         </div>
                         <input type="hidden" id="photo-base64">
                     </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" id="cancel-edit-btn" class="cancel-btn hidden">Batal</button>
-                    <button type="submit" id="form-submit-btn" class="submit-btn"><span class="btn-text">Simpan Akun</span><div class="spinner hidden"></div></button>
+                    <button type="submit" id="form-submit-btn" class="submit-btn">
+                        <span class="btn-text">Simpan Akun</span>
+                        <div class="spinner hidden"></div>
+                    </button>
                 </div>
             </form>
 
-            <div class="account-list-container">
-                <div class="account-list-header">
-                    <h2 class="text-2xl font-semibold text-primary">Daftar Akun</h2>
-                    <div class="search-wrapper"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 search-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg><input type="text" id="search-input" placeholder="Cari email atau pangkat..." class="search-input"></div>
-                    <span id="total-accounts" class="total-accounts-badge">Total: 0</span>
-                </div>
-                <div id="accounts-skeleton-loader" class="accounts-group-container"></div>
-                <div id="accounts-list" class="accounts-group-container"></div>
-                <div id="load-more-container" class="load-more-container hidden"><button id="load-more-btn" class="load-more-btn">Muat Lebih Banyak</button></div>
+            <!-- Account List -->
+            <div class="account-list-header">
+                <h2 class="text-xl font-semibold text-white">Daftar Akun</h2>
+                <span id="total-accounts" class="total-accounts-badge">Total: 0</span>
+            </div>
+            <div id="accounts-skeleton-loader" class="accounts-group-container"></div>
+            <div id="accounts-list" class="accounts-group-container"></div>
+            <div id="load-more-container" class="load-more-container hidden">
+                <button id="load-more-btn" class="load-more-btn">Muat Lebih Banyak</button>
             </div>
         </div>
 
-        <!-- Tampilan Riwayat -->
+        <!-- History View -->
         <div id="history-view" class="view-container">
-            <div class="history-container">
-                <div class="history-header">
-                    <h2 class="text-2xl font-semibold text-primary">Riwayat & Statistik Penjualan</h2>
-                    <div class="flex items-center gap-4">
-                        <div class="filter-wrapper"><label for="month-filter" class="input-label">Filter Bulan:</label><input type="month" id="month-filter" class="input-field"></div>
-                        <button id="clear-history-btn" class="clear-history-btn" title="Hapus semua riwayat"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg><span>Hapus Riwayat</span></button>
-                    </div>
-                </div>
-                <div id="history-stats" class="history-stats"></div>
-                <div class="chart-container"><canvas id="sales-chart"></canvas></div>
-                <div id="history-list" class="history-list"></div>
+            <div class="history-header">
+                <h2 class="text-xl font-semibold text-white">Riwayat & Statistik</h2>
+                <button id="clear-history-btn" class="clear-history-btn" title="Hapus semua riwayat">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
             </div>
+            <div class="filter-wrapper">
+                <label for="month-filter" class="input-label">Filter Bulan:</label>
+                <input type="month" id="month-filter" class="input-field">
+            </div>
+            <div id="history-stats" class="history-stats"></div>
+            <div class="chart-container"><canvas id="sales-chart"></canvas></div>
+            <div id="history-list" class="history-list"></div>
         </div>
         
-        <footer class="app-footer">Dibuat dengan <span class="heart-icon">❤️</span> oleh prof delavie</footer>
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-view="stock-view">
+                <i class="fa-solid fa-box-archive fa-lg"></i>
+                <span class="nav-text">Stok</span>
+            </button>
+            <button class="nav-btn" data-view="history-view">
+                <i class="fa-solid fa-chart-line fa-lg"></i>
+                <span class="nav-text">Riwayat</span>
+            </button>
+        </nav>
     </div>
 
-    <!-- Modal untuk Zoom Foto -->
-    <div id="zoom-modal" class="zoom-modal hidden"><span id="close-zoom-btn" class="close-zoom-btn">&times;</span><img id="zoomed-image" src="" alt="Zoomed Profile Photo" class="zoomed-image"></div>
-    
-    <!-- Modal Konfirmasi -->
-    <div id="confirm-modal" class="confirm-modal-overlay hidden">
-        <div class="confirm-modal-box"><h3 id="confirm-title" class="confirm-title">Konfirmasi</h3><p id="confirm-message" class="confirm-message">Apakah Anda yakin?</p><div class="confirm-buttons"><button id="confirm-yes-btn" class="confirm-btn-yes">Ya</button><button id="confirm-no-btn" class="confirm-btn-no">Tidak</button></div></div>
+    <!-- Modals -->
+    <div id="zoom-modal" class="zoom-modal hidden">
+        <span id="close-zoom-btn" class="close-zoom-btn">&times;</span>
+        <img id="zoomed-image" src="" alt="Zoomed Profile Photo" class="zoomed-image">
     </div>
     
-    <!-- File JavaScript Kustom -->
+    <div id="confirm-modal" class="confirm-modal-overlay hidden">
+        <div class="confirm-modal-box">
+            <h3 id="confirm-title" class="confirm-title">Konfirmasi</h3>
+            <p id="confirm-message" class="confirm-message">Apakah Anda yakin?</p>
+            <div class="confirm-buttons">
+                <button id="confirm-no-btn" class="confirm-btn-no">Tidak</button>
+                <button id="confirm-yes-btn" class="confirm-btn-yes">Ya</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Custom JavaScript -->
     <script src="script.js" defer></script>
 </body>
 </html>

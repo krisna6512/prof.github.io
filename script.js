@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Referensi Elemen DOM ---
     const elements = {
-        body: document.body,
         stockView: document.getElementById('stock-view'),
         historyView: document.getElementById('history-view'),
-        stockTab: document.getElementById('stock-tab'),
-        historyTab: document.getElementById('history-tab'),
+        navButtons: document.querySelectorAll('.nav-btn'),
         appSubtitle: document.getElementById('app-subtitle'),
         addAccountForm: document.getElementById('add-account-form'),
         toggleFormBtn: document.getElementById('toggle-form-btn'),
@@ -59,25 +57,34 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Konstanta ---
-    const TIER_ORDER = ['sultan', 'juragan-i', 'juragan-ii', 'juragan-iii', 'juragan-iv', 'juragan-v', 'terhormat-i', 'terhormat-ii', 'terhormat-iii', 'terhormat-iv', 'terhormat-v', 'ternama-i', 'ternama-ii', 'ternama-iii', 'ternama-iv', 'ternama-v', 'ahli-i', 'ahli-ii', 'ahli-iii', 'ahli-iv', 'ahli-v', 'senior-i', 'senior-ii', 'senior-iii', 'senior-iv', 'senior-v'];
-    const COUNTRIES = ["Indonesia", "Malaysia", "Singapore", "Philippines", "Myanmar", "Thailand", "Vietnam", "Cambodia", "Laos", "Brunei", "Timor-Leste", "United States", "Brazil", "Russia", "Turkey", "Japan", "South Korea", "Saudi Arabia"];
-    const DEFAULT_PHOTO = 'https://placehold.co/100x100/334155/E5E7EB?text=No+Photo';
+    const TIERS = {
+        "Sultan": "sultan",
+        "Juragan I-V": ["juragan-I", "juragan-II", "juragan-III", "juragan-IV", "juragan-V"],
+        "Terhormat I-V": ["terhormat-I", "terhormat-II", "terhormat-III", "terhormat-IV", "terhormat-V"],
+        "Ternama I-V": ["ternama-I", "ternama-II", "ternama-III", "ternama-iv", "ternama-V"],
+        "Ahli I-V": ["ahli-I", "ahli-II", "ahli-III", "ahli-IV", "ahli-V"],
+        "Senior I-V": ["senior-I", "senior-II", "senior-III", "senior-IV", "senior-V"],
+    };
+    const TIER_ORDER = Object.values(TIERS).flat();
+    const COUNTRIES = ["Indonesia", "Malaysia", "Singapura", "Filipina", "Myanmar", "Thailand", "Vietnam", "Kamboja", "Laos", "Brunei", "Timor-Leste", "Amerika Serikat", "Brazil", "Rusia", "Turki", "Jepang", "Korea Selatan", "Arab Saudi"];
+    const DEFAULT_PHOTO = 'https://placehold.co/100x100/1e293b/94a3b8?text=No+Img';
 
     // --- Fungsi Penyimpanan (Storage) ---
-    const saveData = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error(e); showToast('Gagal menyimpan data.', 'fail'); } };
-    const loadData = (key, def = []) => { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; } catch (e) { console.error(e); showToast('Gagal memuat data.', 'fail'); return def; } };
+    const saveData = (key, data) => { try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) { console.error("Gagal menyimpan data:", e); showToast('Gagal menyimpan data.', 'fail'); } };
+    const loadData = (key, def = []) => { try { const d = localStorage.getItem(key); return d ? JSON.parse(d) : def; } catch (e) { console.error("Gagal memuat data:", e); showToast('Gagal memuat data.', 'fail'); return def; } };
 
     // --- Fungsi Bantuan (Helpers) ---
-    const formatCurrency = (amount) => `Rp ${Number(amount || 0).toLocaleString('id-ID')}`;
-    const formatDate = (dateString) => { if (!dateString) return 'N/A'; const d = new Date(dateString); return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }); };
+    const formatCurrency = (amount) => `Rp${Number(amount || 0).toLocaleString('id-ID')}`;
+    const formatDate = (dateString) => { if (!dateString) return 'N/A'; const d = new Date(dateString); return isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); };
     const imageToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); });
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
     // --- Fungsi Tampilan (UI) ---
     function showToast(message, type = 'info') {
         const toast = document.createElement('div');
-        const icons = { success: '✅', sold: '💰', fail: '❌', deleted: '🗑️', info: 'ℹ️', warning: '⚠️' };
+        const icons = { success: 'fa-solid fa-check-circle', sold: 'fa-solid fa-sack-dollar', fail: 'fa-solid fa-times-circle', deleted: 'fa-solid fa-trash-can', info: 'fa-solid fa-info-circle', warning: 'fa-solid fa-exclamation-triangle' };
         toast.className = `toast toast-${type}`;
-        toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span> ${message}`;
+        toast.innerHTML = `<i class="${icons[type] || 'fa-solid fa-info-circle'}"></i><span>${message}</span>`;
         elements.toastContainer.appendChild(toast);
         setTimeout(() => toast.remove(), 4000);
     }
@@ -96,9 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function switchView(viewId) {
         document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        elements.navButtons.forEach(b => b.classList.remove('active'));
         document.getElementById(viewId).classList.add('active');
-        document.querySelector(`.tab-btn[data-view="${viewId}"]`).classList.add('active');
+        document.querySelector(`.nav-btn[data-view="${viewId}"]`).classList.add('active');
         if (viewId === 'history-view') {
             renderHistoryAndStats();
         } else {
@@ -106,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function typeWriter(element, text, speed = 75) {
+    function typeWriter(element, text, speed = 50) {
         let i = 0;
         element.innerHTML = "";
         function type() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(type, speed); } }
@@ -133,26 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
             elements.loadMoreContainer.classList.add('hidden');
         } else {
             const accountsToRender = filtered.slice(0, state.visibleAccountsCount);
-            const groupedAccounts = groupAccountsByTier(accountsToRender);
-            const sortedTiers = Object.keys(groupedAccounts).sort((a, b) => {
-                const tierA_sample = groupedAccounts[a][0].tier;
-                const tierB_sample = groupedAccounts[b][0].tier;
-                return TIER_ORDER.indexOf(tierA_sample) - TIER_ORDER.indexOf(tierB_sample);
-            });
-
-            sortedTiers.forEach(tier => {
-                const accountsInGroup = groupedAccounts[tier];
-                accountsInGroup.sort((a,b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier));
-                const groupElement = document.createElement('div');
-                groupElement.className = 'account-group';
-                groupElement.innerHTML = `<div class="account-group-summary"><span class="account-group-title">Pangkat: ${tier}</span><span class="account-group-count">${accountsInGroup.length} Akun</span></div>`;
-                const grid = document.createElement('div');
-                grid.className = 'account-group-grid';
-                accountsInGroup.forEach((acc, index) => grid.appendChild(createAccountCard(acc, index)));
-                groupElement.appendChild(grid);
-                elements.accountsListDiv.appendChild(groupElement);
-            });
-
+            accountsToRender.forEach((acc, index) => elements.accountsListDiv.appendChild(createAccountCard(acc, index)));
             elements.loadMoreContainer.classList.toggle('hidden', state.visibleAccountsCount >= filtered.length);
         }
         elements.totalAccountsSpan.textContent = `Total: ${filtered.length}`;
@@ -185,25 +173,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalCost = filteredHistory.reduce((sum, item) => sum + (item.hargaBeli || 0), 0);
         const totalProfit = totalRevenue - totalCost;
         const soldCount = filteredHistory.filter(i => i.status === 'sold').length;
-        const avgProfit = soldCount > 0 ? totalProfit / soldCount : 0;
-        const stats = [
-            { label: 'Total Pendapatan', value: formatCurrency(totalRevenue), class: 'revenue' },
-            { label: 'Total Modal', value: formatCurrency(totalCost), class: 'cost' },
-            { label: 'Keuntungan Bersih', value: formatCurrency(totalProfit), class: totalProfit >= 0 ? 'profit' : 'loss' },
-            { label: 'Rata-rata Profit', value: formatCurrency(avgProfit), class: 'info' }
-        ];
-        elements.historyStatsDiv.innerHTML = '';
-        stats.forEach((stat, index) => {
-            const statCard = document.createElement('div');
-            statCard.className = 'stat-card';
-            statCard.style.animationDelay = `${index * 100}ms`;
-            statCard.innerHTML = `<p class="stat-label">${stat.label}</p><p class="stat-value ${stat.class}">${stat.value}</p>`;
-            elements.historyStatsDiv.appendChild(statCard);
-        });
+        
+        elements.historyStatsDiv.innerHTML = `
+            <div class="stat-card"><p class="stat-label">Pendapatan</p><p class="stat-value revenue">${formatCurrency(totalRevenue)}</p></div>
+            <div class="stat-card"><p class="stat-label">Modal</p><p class="stat-value cost">${formatCurrency(totalCost)}</p></div>
+            <div class="stat-card"><p class="stat-label">Profit</p><p class="stat-value profit">${formatCurrency(totalProfit)}</p></div>
+            <div class="stat-card"><p class="stat-label">Terjual</p><p class="stat-value info">${soldCount} Akun</p></div>
+        `;
     }
 
     function renderSalesChart(filteredHistory) {
         const monthlyData = filteredHistory.reduce((acc, item) => {
+            if (!item.soldDate) return acc;
             const month = item.soldDate.substring(0, 7);
             if (!acc[month]) acc[month] = { profit: 0 };
             acc[month].profit += (item.hargaJual || 0) - (item.hargaBeli || 0);
@@ -216,9 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.salesChartInstance) state.salesChartInstance.destroy();
 
         const ctx = elements.salesChartCanvas.getContext('2d');
-        const chartGradient = ctx.createLinearGradient(0, 0, 0, 300);
-        chartGradient.addColorStop(0, 'rgba(56, 189, 248, 0.6)');
-        chartGradient.addColorStop(1, 'rgba(56, 189, 248, 0.05)');
+        const chartGradient = ctx.createLinearGradient(0, 0, 0, 250);
+        chartGradient.addColorStop(0, 'rgba(56, 189, 248, 0.5)');
+        chartGradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
 
         state.salesChartInstance = new Chart(ctx, {
             type: 'line',
@@ -231,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     borderColor: 'rgba(56, 189, 248, 1)', 
                     borderWidth: 2,
                     pointBackgroundColor: 'rgba(56, 189, 248, 1)',
-                    pointBorderColor: '#fff',
+                    pointBorderColor: '#0f172a',
                     pointHoverRadius: 7,
                     tension: 0.4,
                     fill: true 
@@ -241,33 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsive: true, 
                 maintainAspectRatio: false, 
                 scales: { 
-                    y: { 
-                        beginAtZero: true, 
-                        ticks: { 
-                            callback: (v) => formatCurrency(v),
-                            color: '#94A3B8'
-                        },
-                        grid: {
-                            color: 'rgba(71, 85, 105, 0.5)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#94A3B8'
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
+                    y: { beginAtZero: true, ticks: { color: '#94A3B8' }, grid: { color: 'rgba(51, 65, 85, 0.5)' } },
+                    x: { ticks: { color: '#94A3B8' }, grid: { display: false } }
                 }, 
-                plugins: { 
-                    legend: { display: false }, 
-                    tooltip: { 
-                        callbacks: { 
-                            label: (c) => `Keuntungan: ${formatCurrency(c.raw)}` 
-                        } 
-                    } 
-                } 
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `Profit: ${formatCurrency(c.raw)}` } } } 
             }
         });
     }
@@ -278,42 +236,143 @@ document.addEventListener('DOMContentLoaded', () => {
         const tierPrefix = account.tier.split('-')[0];
         card.className = `account-card tier-${tierPrefix}`;
         card.dataset.id = account.id;
-        card.style.animationDelay = `${index * 50}ms`;
+        card.style.animationDelay = `${index * 30}ms`;
         const photoSrc = account.photoBase64 || DEFAULT_PHOTO;
+        const tierText = account.tier.replace(/-/g, ' ').split(' ').map(capitalize).join(' ');
+
         card.innerHTML = `
-            <div class="card-header"><img src="${photoSrc}" alt="Foto Profil" class="profile-img" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';"><div class="card-info"><p class="card-gmail">${account.gmail}</p><p class="card-tier">${account.tier.replace(/-/g, ' ')}</p></div></div>
-            <div class="card-pricing"><div class="price-item"><span class="price-label">Beli</span><span class="price-value buy-price">${formatCurrency(account.hargaBeli)}</span></div><div class="price-item"><span class="price-label">Jual</span><span class="price-value sell-price">${formatCurrency(account.hargaJual)}</span></div></div>
-            <div class="card-details"><div class="detail-label">Password</div><div class="detail-value password-wrapper"><span class="password-text">••••••••</span><button class="password-toggle-btn"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z" /><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" /></svg></button></div><div class="detail-label">ID MLBB</div><div class="detail-value">${account.mlbbId || 'N/A'}</div><div class="detail-label">Region</div><div class="detail-value">${account.region || 'N/A'}</div><div class="detail-label">Tanggal</div><div class="detail-value">${formatDate(account.addedDate) || 'N/A'}</div></div>
-            <div class="card-actions"><button class="action-btn edit-btn" title="Edit Akun"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" /></svg></button><button class="action-btn delete-btn" title="Hapus/Jual Akun"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clip-rule="evenodd" /></svg></button></div>`;
+            <div class="flex items-start gap-4 mb-3">
+                <img src="${photoSrc}" alt="Foto Profil" class="profile-img w-14 h-14 rounded-full object-cover border-2 border-slate-700 cursor-pointer flex-shrink-0" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';">
+                <div class="flex-grow min-w-0">
+                    <p class="font-semibold text-white truncate" title="${account.gmail}">${account.gmail}</p>
+                    <p class="text-sm text-sky-400 font-medium">${tierText}</p>
+                </div>
+                <div class="relative group">
+                    <button class="menu-btn w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-400 transition"><i class="fa-solid fa-ellipsis-v"></i></button>
+                    <div class="menu-dropdown">
+                        <button class="menu-item edit-btn"><i class="fa-solid fa-pencil w-6"></i>Edit</button>
+                        <button class="menu-item sold-btn"><i class="fa-solid fa-sack-dollar w-6"></i>Terjual</button>
+                        <button class="menu-item loss-btn"><i class="fa-solid fa-arrow-down-wide-short w-6"></i>Rugi/Hapus</button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-800/50 rounded-lg p-3 space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Password</span>
+                    <div class="flex items-center gap-2">
+                        <span class="password-text text-slate-200">••••••••</span>
+                        <button class="password-toggle-btn text-slate-500 hover:text-sky-400 transition"><i class="fa-solid fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">ID MLBB</span>
+                    <span class="text-slate-200 font-medium">${account.mlbbId || 'N/A'}</span>
+                </div>
+                 <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Region</span>
+                    <span class="text-slate-200 font-medium">${account.region || 'N/A'}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">Tanggal</span>
+                    <span class="text-slate-200 font-medium">${formatDate(account.addedDate) || 'N/A'}</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mt-3 text-center">
+                <div class="bg-red-500/10 border border-red-500/20 rounded-lg p-2">
+                    <p class="text-xs text-red-400">HARGA BELI</p>
+                    <p class="font-bold text-white">${formatCurrency(account.hargaBeli)}</p>
+                </div>
+                <div class="bg-green-500/10 border border-green-500/20 rounded-lg p-2">
+                    <p class="text-xs text-green-400">HARGA JUAL</p>
+                    <p class="font-bold text-white">${formatCurrency(account.hargaJual)}</p>
+                </div>
+            </div>`;
+
         card.querySelector('.profile-img').addEventListener('click', () => { elements.zoomedImage.src = photoSrc; elements.zoomModal.classList.remove('hidden'); });
-        card.querySelector('.password-toggle-btn').addEventListener('click', e => { e.stopPropagation(); const pt = card.querySelector('.password-text'); pt.textContent = pt.textContent === '••••••••' ? (account.moontonPassword || '') : '••••••••'; });
+        card.querySelector('.password-toggle-btn').addEventListener('click', e => { 
+            e.stopPropagation(); 
+            const pt = card.querySelector('.password-text'); 
+            const icon = e.currentTarget.querySelector('i');
+            if(pt.textContent === '••••••••') {
+                pt.textContent = account.moontonPassword || '';
+                pt.classList.add('visible');
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pt.textContent = '••••••••';
+                pt.classList.remove('visible');
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
         card.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); handleEditAccount(account.id); });
-        card.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); showDeletePrompt(card, account.id); });
+        card.querySelector('.sold-btn').addEventListener('click', e => { e.stopPropagation(); moveAccountToHistory(account.id, 'sold'); });
+        card.querySelector('.loss-btn').addEventListener('click', e => { e.stopPropagation(); moveAccountToHistory(account.id, 'loss'); });
         return card;
     }
 
     function createHistoryItem(item) {
         const result = (item.hargaJual || 0) - (item.hargaBeli || 0);
         const isLoss = item.status === 'loss' || result < 0;
-        const resultClass = isLoss ? 'loss' : 'profit';
+        const resultClass = isLoss ? 'text-red-400' : 'text-lime-400';
         const resultLabel = isLoss ? 'Rugi' : 'Untung';
+        
         const itemEl = document.createElement('div');
-        itemEl.className = `history-item ${isLoss ? 'loss' : ''}`;
-        itemEl.innerHTML = `<div class="history-info"><img src="${item.photoBase64 || DEFAULT_PHOTO}" alt="Foto Profil" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';"><div class="history-details"><p class="history-gmail">${item.gmail}</p><p class="history-date">${isLoss ? 'Dikembalikan' : 'Terjual'} pada: ${formatDate(item.soldDate)}</p></div></div><div class="history-pricing"><p class="history-result ${resultClass}">${resultLabel}: ${formatCurrency(Math.abs(result))}</p><p class="history-price-breakdown">${formatCurrency(item.hargaJual)} - ${formatCurrency(item.hargaBeli)}</p></div><button class="delete-history-btn" title="Hapus item ini"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>`;
-        itemEl.querySelector('.delete-history-btn').addEventListener('click', e => { e.stopPropagation(); showConfirmModal('Hapus Riwayat?', `Anda yakin ingin menghapus riwayat untuk akun "${item.gmail}"?`, () => deleteHistoryItem(item.id)); });
+        itemEl.className = `bg-slate-800 p-3 rounded-lg flex items-center gap-4 border-l-4 ${isLoss ? 'border-red-500' : 'border-sky-500'}`;
+        itemEl.innerHTML = `
+            <img src="${item.photoBase64 || DEFAULT_PHOTO}" alt="Foto Profil" class="w-10 h-10 rounded-full object-cover flex-shrink-0" onerror="this.onerror=null;this.src='${DEFAULT_PHOTO}';">
+            <div class="flex-grow min-w-0">
+                <p class="font-medium text-white truncate">${item.gmail}</p>
+                <p class="text-xs text-slate-400">${isLoss ? 'Dihapus' : 'Terjual'} pada: ${formatDate(item.soldDate)}</p>
+            </div>
+            <div class="text-right flex-shrink-0">
+                <p class="font-bold ${resultClass}">${resultLabel}: ${formatCurrency(Math.abs(result))}</p>
+                <p class="text-xs text-slate-500">${formatCurrency(item.hargaJual)} - ${formatCurrency(item.hargaBeli)}</p>
+            </div>
+            <button class="delete-history-btn text-slate-500 hover:text-red-500 transition-colors w-8 h-8 rounded-full hover:bg-red-500/10" title="Hapus item ini">
+                <i class="fa-solid fa-times"></i>
+            </button>`;
+        itemEl.querySelector('.delete-history-btn').addEventListener('click', e => { 
+            e.stopPropagation(); 
+            showConfirmModal('Hapus Riwayat?', `Anda yakin ingin menghapus riwayat untuk akun "${item.gmail}"?`, () => deleteHistoryItem(item.id)); 
+        });
         return itemEl;
     }
     
     function createSkeletonCard() {
         const card = document.createElement('div');
-        card.className = 'skeleton-card';
-        card.innerHTML = `<div class="flex items-center gap-4 mb-4"><div class="skeleton circle"></div><div class="flex-1"><div class="skeleton text w-3/4"></div><div class="skeleton text-sm w-1/2"></div></div></div><div class="flex justify-around bg-gray-700/20 rounded-lg p-3 mb-4"><div class="w-1/3"><div class="skeleton text-sm w-full"></div></div><div class="w-1/3"><div class="skeleton text-sm w-full"></div></div></div><div class="skeleton text-sm w-full mb-2"></div><div class="skeleton text-sm w-3/4"></div>`;
+        card.className = 'bg-slate-800 p-4 rounded-lg animate-pulse';
+        card.innerHTML = `
+            <div class="flex items-center gap-4 mb-4">
+                <div class="w-14 h-14 rounded-full bg-slate-700"></div>
+                <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-slate-700 rounded w-3/4"></div>
+                    <div class="h-3 bg-slate-700 rounded w-1/2"></div>
+                </div>
+            </div>
+            <div class="space-y-2">
+                <div class="h-4 bg-slate-700 rounded"></div>
+                <div class="h-4 bg-slate-700 rounded w-5/6"></div>
+            </div>`;
         return card;
     }
 
     function getEmptyStateHTML(type) {
-        if (type === 'stock') return `<div class="empty-state"><svg class="empty-state-icon w-16 h-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg><h3 class="empty-state-title">Stok Akun Kosong</h3><p class="empty-state-text">${state.searchTerm ? 'Tidak ada akun yang cocok dengan pencarian Anda.' : 'Anda belum menambahkan akun apapun. Klik tombol di atas untuk memulai.'}</p></div>`;
-        if (type === 'history') return `<div class="empty-state"><svg class="empty-state-icon w-16 h-16" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg><h3 class="empty-state-title">Riwayat Penjualan Kosong</h3><p class="empty-state-text">Belum ada data penjualan yang tercatat untuk periode ini.</p></div>`;
+        const icons = {
+            stock: 'fa-box-open',
+            history: 'fa-file-invoice-dollar'
+        };
+        const titles = {
+            stock: 'Stok Akun Kosong',
+            history: 'Riwayat Penjualan Kosong'
+        };
+        const texts = {
+            stock: state.searchTerm ? 'Tidak ada akun yang cocok dengan pencarian Anda.' : 'Anda belum menambahkan akun. Klik tombol tambah untuk memulai.',
+            history: 'Belum ada data penjualan yang tercatat untuk periode ini.'
+        };
+        return `<div class="text-center p-8 bg-slate-800 rounded-lg mt-4">
+            <i class="fa-solid ${icons[type]} fa-3x text-slate-600 mb-4"></i>
+            <h3 class="text-lg font-semibold text-white">${titles[type]}</h3>
+            <p class="text-slate-400 text-sm mt-1">${texts[type]}</p>
+        </div>`;
     }
 
     // --- Logika Aplikasi (Handlers) ---
@@ -324,20 +383,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const editingId = elements.editingAccountIdInput.value;
             const gmail = elements.gmailAccountInput.value.trim();
             if (!gmail) { showToast('Akun Gmail tidak boleh kosong!', 'warning'); setSubmitButtonLoading(false); return; }
-            const accountData = { gmail, moontonPassword: elements.moontonPasswordInput.value.trim(), mlbbId: elements.mlbbIdInput.value.trim(), region: elements.accountRegionSelect.value, photoBase64: elements.photoBase64Input.value, tier: elements.accountTierSelect.value, addedDate: elements.addedDateInput.value, hargaBeli: parseFloat(elements.hargaBeliInput.value) || 0, hargaJual: parseFloat(elements.hargaJualInput.value) || 0, };
+            const accountData = { 
+                gmail, 
+                moontonPassword: elements.moontonPasswordInput.value.trim(), 
+                mlbbId: elements.mlbbIdInput.value.trim(), 
+                region: elements.accountRegionSelect.value, 
+                photoBase64: elements.photoBase64Input.value, 
+                tier: elements.accountTierSelect.value, 
+                addedDate: elements.addedDateInput.value, 
+                hargaBeli: parseFloat(elements.hargaBeliInput.value) || 0, 
+                hargaJual: parseFloat(elements.hargaJualInput.value) || 0, 
+            };
             if (editingId) {
                 const idx = state.accounts.findIndex(acc => acc.id === editingId);
                 if (idx > -1) { state.accounts[idx] = { ...state.accounts[idx], ...accountData }; showToast('Akun berhasil diperbarui!', 'success'); }
             } else {
                 accountData.id = `acc-${Date.now()}`;
                 state.accounts.unshift(accountData);
-                showToast('Mantap nyetok trus juragan!', 'success');
+                showToast('Akun baru berhasil ditambahkan!', 'success');
             }
             saveData('accountsDb', state.accounts);
             resetAndHideForm();
             refreshAccountView();
             setSubmitButtonLoading(false);
-        }, 500);
+        }, 300);
     }
     
     function handleEditAccount(id) {
@@ -357,23 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.submitBtnText.textContent = 'Update Akun';
         elements.cancelEditBtn.classList.remove('hidden');
         elements.addAccountForm.classList.remove('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function showDeletePrompt(card, accountId) {
-        const actionsDiv = card.querySelector('.card-actions');
-        const originalButtons = actionsDiv.innerHTML;
-        actionsDiv.innerHTML = `<button class="action-btn sold-btn">Terjual</button><button class="action-btn hb-btn">Ke HB</button><button class="action-btn keep-btn">Batal</button>`;
-        actionsDiv.querySelector('.sold-btn').onclick = () => moveAccountToHistory(accountId, 'sold');
-        actionsDiv.querySelector('.hb-btn').onclick = () => moveAccountToHistory(accountId, 'loss');
-        actionsDiv.querySelector('.keep-btn').onclick = () => { actionsDiv.innerHTML = originalButtons; setupCardEventListeners(card, accountId); };
-    }
-
-    function setupCardEventListeners(card, accountId) {
-        const account = state.accounts.find(a => a.id === accountId);
-        if(!account) return;
-        card.querySelector('.edit-btn').addEventListener('click', e => { e.stopPropagation(); handleEditAccount(accountId); });
-        card.querySelector('.delete-btn').addEventListener('click', e => { e.stopPropagation(); showDeletePrompt(card, accountId); });
+        elements.addAccountForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function moveAccountToHistory(id, status) {
@@ -381,16 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (accountIndex === -1) return;
         const [accountToMove] = state.accounts.splice(accountIndex, 1);
         const historyData = { ...accountToMove, soldDate: new Date().toISOString(), status };
-        if (status === 'loss') {
-            historyData.hargaJual = 0;
-        }
+        if (status === 'loss') historyData.hargaJual = 0;
+        
         state.history.unshift(historyData);
         saveData('accountsDb', state.accounts);
         saveData('historyDb', state.history);
         
-        const toastType = status === 'sold' ? 'sold' : 'fail';
-        const toastMessage = status === 'sold' ? 'SOLD, JURAGAN MANTAP!' : 'Gagal? Coba lagi bos.';
-        showToast(toastMessage, toastType);
+        const toastMessage = status === 'sold' ? 'Akun berhasil terjual!' : 'Akun dihapus dari stok.';
+        showToast(toastMessage, status === 'sold' ? 'sold' : 'deleted');
         
         refreshAccountView();
     }
@@ -404,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearAllHistory() {
         if (state.history.length === 0) { showToast('Tidak ada riwayat untuk dihapus.', 'info'); return; }
-        showConfirmModal('Hapus SEMUA Riwayat?', 'Anda yakin ingin menghapus seluruh data riwayat penjualan? Ini permanen.', () => {
+        showConfirmModal('Hapus SEMUA Riwayat?', 'Tindakan ini tidak dapat diurungkan. Seluruh data riwayat penjualan akan hilang permanen.', () => {
             state.history = [];
             saveData('historyDb', []);
             showToast('Semua riwayat telah dihapus.', 'deleted');
@@ -413,10 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetForm() {
-        elements.editingAccountIdInput.value = '';
         elements.addAccountForm.reset();
+        elements.editingAccountIdInput.value = '';
         elements.photoBase64Input.value = '';
-        elements.photoPreviewImg.src = DEFAULT_PHOTO;
+        elements.photoPreviewImg.src = 'https://placehold.co/100x100/1e293b/94a3b8?text=Preview';
         elements.addedDateInput.valueAsDate = new Date();
         elements.accountTierSelect.value = 'senior-v';
         elements.accountRegionSelect.value = 'Indonesia';
@@ -429,15 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.addAccountForm.classList.add('hidden');
     }
 
-    function groupAccountsByTier(accounts) {
-        return accounts.reduce((acc, account) => {
-            const tier = account.tier.split('-')[0];
-            if (!acc[tier]) acc[tier] = [];
-            acc[tier].push(account);
-            return acc;
-        }, {});
-    }
-
     function refreshAccountView() {
         state.visibleAccountsCount = state.accountsPerPage;
         renderAccounts();
@@ -445,11 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Inisialisasi ---
     function init() {
-        state.accounts = loadData('accountsDb');
+        state.accounts = loadData('accountsDb').sort((a,b) => TIER_ORDER.indexOf(a.tier) - TIER_ORDER.indexOf(b.tier));
         state.history = loadData('historyDb');
         renderSkeletons(5);
-        setTimeout(() => { refreshAccountView(); }, 500);
-        typeWriter(elements.appSubtitle, "Thanks to prof delavie");
+        setTimeout(() => { refreshAccountView(); }, 300);
+        typeWriter(elements.appSubtitle, "Kelola stok akun MLBB dengan mudah.");
         setupEventListeners();
         populateDropdowns();
         resetForm();
@@ -459,10 +501,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupEventListeners() {
         elements.addAccountForm.addEventListener('submit', handleFormSubmit);
         elements.searchInput.addEventListener('input', e => { state.searchTerm = e.target.value.toLowerCase(); refreshAccountView(); });
-        elements.toggleFormBtn.addEventListener('click', () => { if (elements.editingAccountIdInput.value) { resetAndHideForm(); } else { elements.addAccountForm.classList.toggle('hidden'); } });
+        elements.toggleFormBtn.addEventListener('click', () => {
+            if (elements.editingAccountIdInput.value) {
+                resetAndHideForm();
+            } else {
+                const isHidden = elements.addAccountForm.classList.contains('hidden');
+                elements.addAccountForm.classList.toggle('hidden');
+                if (isHidden) {
+                    elements.addAccountForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
         elements.cancelEditBtn.addEventListener('click', resetAndHideForm);
-        elements.stockTab.addEventListener('click', () => switchView('stock-view'));
-        elements.historyTab.addEventListener('click', () => switchView('history-view'));
+        elements.navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
         elements.monthFilterInput.addEventListener('change', () => renderHistoryAndStats());
         elements.clearHistoryBtn.addEventListener('click', clearAllHistory);
         elements.loadMoreBtn.addEventListener('click', () => { state.visibleAccountsCount += state.accountsPerPage; renderAccounts(); });
@@ -474,14 +525,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populateDropdowns() {
-        elements.accountRegionSelect.innerHTML = '';
-        COUNTRIES.forEach(country => {
-            const option = document.createElement('option');
-            option.value = country;
-            option.textContent = country;
-            elements.accountRegionSelect.appendChild(option);
-        });
+        // Populate Regions
+        elements.accountRegionSelect.innerHTML = COUNTRIES.map(c => `<option value="${c}">${c}</option>`).join('');
         elements.accountRegionSelect.value = "Indonesia";
+
+        // Populate Tiers
+        elements.accountTierSelect.innerHTML = '';
+        for (const groupName in TIERS) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = groupName;
+            const tiers = Array.isArray(TIERS[groupName]) ? TIERS[groupName] : [TIERS[groupName]];
+            tiers.forEach(tierValue => {
+                const option = document.createElement('option');
+                option.value = tierValue;
+                option.textContent = tierValue.replace(/-/g, ' ').split(' ').map(capitalize).join(' ');
+                optgroup.appendChild(option);
+            });
+            elements.accountTierSelect.appendChild(optgroup);
+        }
     }
     
     init();
